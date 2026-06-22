@@ -1,6 +1,7 @@
 import { TrendingUp, TrendingDown } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { formatNumber, formatPrice } from "@/lib/crypto-format"
 
 interface CoinData {
   rank: number
@@ -95,29 +96,6 @@ const mockCoinData: CoinData[] = [
     logo: "/coin/cardano.png",
   },
 ]
-
-function formatNumber(num: number): string {
-  if (num >= 1e12) {
-    return `$${(num / 1e12).toFixed(2)}T`
-  }
-  if (num >= 1e9) {
-    return `$${(num / 1e9).toFixed(2)}B`
-  }
-  if (num >= 1e6) {
-    return `$${(num / 1e6).toFixed(2)}M`
-  }
-  if (num >= 1e3) {
-    return `$${(num / 1e3).toFixed(2)}K`
-  }
-  return `$${num.toFixed(2)}`
-}
-
-function formatPrice(price: number): string {
-  if (price >= 1) {
-    return `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-  }
-  return `$${price.toFixed(4)}`
-}
 
 export default function Component() {
   return (

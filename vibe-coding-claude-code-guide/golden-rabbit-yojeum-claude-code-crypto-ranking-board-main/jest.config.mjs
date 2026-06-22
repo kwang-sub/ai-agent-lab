@@ -1,25 +1,17 @@
-import { pathsToModuleNameMapper } from '@unrs/resolver';
-import { readFileSync } from 'fs';
+import nextJest from 'next/jest.js';
 
-const tsConfig = JSON.parse(readFileSync('./tsconfig.json', 'utf8'));
+const createJestConfig = nextJest({ dir: './' });
 
-const config = {
-  preset: 'ts-jest',
+const customJestConfig = {
   testEnvironment: 'jest-environment-jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  moduleNameMapper: pathsToModuleNameMapper(tsConfig.compilerOptions.paths || {}, { prefix: '<rootDir>/' }),
   testMatch: [
     '**/__tests__/**/*.{js,jsx,ts,tsx}',
     '**/*.{spec,test}.{js,jsx,ts,tsx}'
   ],
-  transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', {
-      tsconfig: {
-        jsx: 'react'
-      }
-    }]
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/$1'
   },
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   collectCoverageFrom: [
     '**/*.{js,jsx,ts,tsx}',
     '!**/*.d.ts',
@@ -30,4 +22,4 @@ const config = {
   ]
 };
 
-export default config;
+export default createJestConfig(customJestConfig);
