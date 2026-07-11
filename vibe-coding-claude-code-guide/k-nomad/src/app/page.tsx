@@ -18,6 +18,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AuthNav } from "@/components/auth-nav";
 import {
   Card,
   CardContent,
@@ -209,9 +210,7 @@ function Header() {
           <span>K-NOMAD</span>
         </Link>
         <nav className="flex items-center gap-2">
-          <Button asChild variant="ghost" className="hidden sm:inline-flex">
-            <Link href="/login">로그인</Link>
-          </Button>
+          <AuthNav />
           <Button size="sm">도시등록</Button>
         </nav>
       </div>
