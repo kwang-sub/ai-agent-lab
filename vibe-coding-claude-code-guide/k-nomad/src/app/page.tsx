@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import {
   ArrowRight,
   Building2,
@@ -200,15 +202,15 @@ function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-amber-200/30 bg-[oklch(0.18_0.016_255_/_0.92)] text-primary-foreground shadow-lg shadow-slate-950/10 backdrop-blur">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <a href="#" className="flex items-center gap-2 font-semibold tracking-normal">
+        <Link href="/" className="flex items-center gap-2 font-semibold tracking-normal">
           <span className="flex h-8 w-8 items-center justify-center rounded-md border border-amber-200/50 bg-secondary text-sm text-secondary-foreground shadow-sm shadow-amber-900/20">
             K
           </span>
           <span>K-NOMAD</span>
-        </a>
+        </Link>
         <nav className="flex items-center gap-2">
-          <Button variant="ghost" className="hidden sm:inline-flex">
-            로그인
+          <Button asChild variant="ghost" className="hidden sm:inline-flex">
+            <Link href="/login">로그인</Link>
           </Button>
           <Button size="sm">도시등록</Button>
         </nav>
