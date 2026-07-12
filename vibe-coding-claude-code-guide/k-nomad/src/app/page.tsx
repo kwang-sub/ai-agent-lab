@@ -9,6 +9,8 @@ import {
   Bus,
   Coffee,
   Compass,
+  ThumbsDown,
+  ThumbsUp,
   MonitorUp,
   Search,
   ShieldCheck,
@@ -56,6 +58,14 @@ type CityFilters = {
   region: City["region"] | "전체";
   environment: City["environment"] | "전체";
   bestSeason: City["bestSeason"] | "전체";
+};
+
+type VoteState = "like" | "dislike" | null;
+
+type CityVote = {
+  selected: VoteState;
+  likes: number;
+  dislikes: number;
 };
 
 const popularFilters = [
@@ -283,6 +293,18 @@ function CityExplorer() {
     environment: "전체",
     bestSeason: "전체",
   });
+  const [cityVotes, setCityVotes] = useState<Record<string, CityVote>>(() =>
+    Object.fromEntries(
+      cities.map((city) => [
+        city.name,
+        {
+          selected: null,
+          likes: city.likes,
+          dislikes: city.dislikes,
+        },
+      ]),
+    ),
+  );
 
   const filteredCities = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -337,6 +359,36 @@ function CityExplorer() {
       region: "전체",
       environment: "전체",
       bestSeason: "전체",
+    });
+  }
+
+  function updateCityVote(city: City, nextVote: Exclude<VoteState, null>) {
+    setCityVotes((current) => {
+      const currentVote = current[city.name] ?? {
+        selected: null,
+        likes: city.likes,
+        dislikes: city.dislikes,
+      };
+
+      if (currentVote.selected === nextVote) {
+        return {
+          ...current,
+          [city.name]: {
+            selected: null,
+            likes: city.likes,
+            dislikes: city.dislikes,
+          },
+        };
+      }
+
+      return {
+        ...current,
+        [city.name]: {
+          selected: nextVote,
+          likes: city.likes + (nextVote === "like" ? 1 : 0),
+          dislikes: city.dislikes + (nextVote === "dislike" ? 1 : 0),
+        },
+      };
     });
   }
 
@@ -401,9 +453,22 @@ function CityExplorer() {
       </div>
       {filteredCities.length ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredCities.map((city) => (
-            <CityCard key={city.name} city={city} />
-          ))}
+          {filteredCities.map((city) => {
+            const vote = cityVotes[city.name] ?? {
+              selected: null,
+              likes: city.likes,
+              dislikes: city.dislikes,
+            };
+
+            return (
+              <CityCard
+                key={city.name}
+                city={city}
+                vote={vote}
+                onVote={(nextVote) => updateCityVote(city, nextVote)}
+              />
+            );
+          })}
         </div>
       ) : (
         <div className="rounded-lg border bg-card/90 px-4 py-10 text-center text-muted-foreground">
@@ -456,7 +521,15 @@ function ShareExperience() {
   );
 }
 
-function CityCard({ city }: { city: City }) {
+function CityCard({
+  city,
+  vote,
+  onVote,
+}: {
+  city: City;
+  vote: CityVote;
+  onVote: (nextVote: Exclude<VoteState, null>) => void;
+}) {
   return (
     <Card className="overflow-hidden border-amber-200/50 shadow-lg shadow-slate-950/8">
       <div className={cn("relative h-36 bg-gradient-to-br", city.visual)}>
@@ -473,19 +546,45 @@ function CityCard({ city }: { city: City }) {
             <CardTitle className="text-lg">{city.name}</CardTitle>
             <CardDescription>{city.region}</CardDescription>
           </div>
-          <div className="text-right text-sm">
-            <p className="font-semibold text-primary">{city.likes.toLocaleString()} 좋아요</p>
-            <p className="text-muted-foreground">{city.dislikes.toLocaleString()} 싫어요</p>
-          </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
         <dl className="grid gap-3 text-sm">
           <InfoRow label="예산" value={city.budget} />
           <InfoRow label="지역" value={city.region} />
           <InfoRow label="환경" value={city.environment} />
           <InfoRow label="최고 계절" value={city.bestSeason} />
         </dl>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            type="button"
+            variant={vote.selected === "like" ? "default" : "outline"}
+            aria-pressed={vote.selected === "like"}
+            onClick={() => onVote("like")}
+            className={cn(
+              "justify-center",
+              vote.selected === "like" &&
+                "bg-emerald-600 text-white hover:bg-emerald-700",
+            )}
+          >
+            <ThumbsUp className="h-4 w-4" />
+            {vote.likes.toLocaleString()}
+          </Button>
+          <Button
+            type="button"
+            variant={vote.selected === "dislike" ? "default" : "outline"}
+            aria-pressed={vote.selected === "dislike"}
+            onClick={() => onVote("dislike")}
+            className={cn(
+              "justify-center",
+              vote.selected === "dislike" &&
+                "bg-rose-600 text-white hover:bg-rose-700",
+            )}
+          >
+            <ThumbsDown className="h-4 w-4" />
+            {vote.dislikes.toLocaleString()}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
