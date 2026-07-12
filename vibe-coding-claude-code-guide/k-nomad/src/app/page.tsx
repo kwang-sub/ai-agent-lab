@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useMemo, useState } from "react";
 
 import {
   ArrowRight,
@@ -10,7 +13,6 @@ import {
   Search,
   ShieldCheck,
   Sparkles,
-  Star,
   Users,
   Volume2,
   WalletCards,
@@ -39,112 +41,129 @@ import { cn } from "@/lib/utils";
 
 type City = {
   name: string;
-  region: string;
-  rating: string;
-  cost: string;
-  scores: string[];
-  tags: string[];
+  region: "수도권" | "경상도" | "전라도" | "강원도" | "제주도" | "충청도";
+  budget: "100만원 이하" | "100~200만원" | "200만원 이상";
+  environment: "자연친화" | "도심선호" | "카페작업" | "코워킹 필수";
+  bestSeason: "봄" | "여름" | "가을" | "겨울";
+  likes: number;
+  dislikes: number;
   visual: string;
   mood: string;
 };
 
+type CityFilters = {
+  budget: City["budget"] | "전체";
+  region: City["region"] | "전체";
+  environment: City["environment"] | "전체";
+  bestSeason: City["bestSeason"] | "전체";
+};
+
 const popularFilters = [
-  "가성비 좋은",
-  "카페 많은",
-  "바다 근처",
-  "조용한",
-  "교통 편리",
-  "한달살기 추천",
+  "100만원 이하",
+  "수도권",
+  "자연친화",
+  "카페작업",
+  "봄",
+  "가을",
 ];
 
 const cities: City[] = [
   {
     name: "서울",
     region: "수도권",
-    rating: "4.3",
-    cost: "₩2,200,000 / mo",
-    scores: ["카페 5", "인터넷 5", "교통 5"],
-    tags: ["대도시", "교통", "커뮤니티"],
+    budget: "200만원 이상",
+    environment: "코워킹 필수",
+    bestSeason: "가을",
+    likes: 156,
+    dislikes: 32,
     visual: "from-slate-950 via-slate-700 to-amber-300",
     mood: "초연결 대도시",
   },
   {
     name: "부산",
-    region: "경상권",
-    rating: "4.1",
-    cost: "₩1,700,000 / mo",
-    scores: ["바다 5", "카페 4", "재미 4"],
-    tags: ["바다", "장기체류", "문화"],
+    region: "경상도",
+    budget: "100~200만원",
+    environment: "카페작업",
+    bestSeason: "여름",
+    likes: 142,
+    dislikes: 26,
     visual: "from-slate-900 via-cyan-800 to-stone-200",
     mood: "해변 워케이션",
   },
   {
     name: "제주",
-    region: "제주권",
-    rating: "4.0",
-    cost: "₩1,900,000 / mo",
-    scores: ["자연 5", "조용함 4", "카페 4"],
-    tags: ["자연", "한달살기", "휴식"],
+    region: "제주도",
+    budget: "100~200만원",
+    environment: "자연친화",
+    bestSeason: "봄",
+    likes: 138,
+    dislikes: 29,
     visual: "from-emerald-950 via-teal-800 to-amber-200",
     mood: "자연 집중 환경",
   },
   {
     name: "강릉",
-    region: "강원권",
-    rating: "3.9",
-    cost: "₩1,500,000 / mo",
-    scores: ["인터넷 4", "조용함 5", "바다 5"],
-    tags: ["바다", "조용함", "카페"],
+    region: "강원도",
+    budget: "100~200만원",
+    environment: "카페작업",
+    bestSeason: "여름",
+    likes: 121,
+    dislikes: 18,
     visual: "from-blue-950 via-slate-700 to-stone-200",
     mood: "동해안 집중",
   },
   {
     name: "대전",
-    region: "충청권",
-    rating: "3.8",
-    cost: "₩1,400,000 / mo",
-    scores: ["교통 4", "비용 4", "인터넷 4"],
-    tags: ["중심지", "가성비", "교통"],
+    region: "충청도",
+    budget: "100~200만원",
+    environment: "도심선호",
+    bestSeason: "가을",
+    likes: 104,
+    dislikes: 21,
     visual: "from-zinc-950 via-indigo-900 to-emerald-200",
     mood: "균형형 거점",
   },
   {
     name: "전주",
-    region: "전라권",
-    rating: "3.7",
-    cost: "₩1,300,000 / mo",
-    scores: ["비용 5", "음식 5", "조용함 4"],
-    tags: ["문화", "가성비", "음식"],
+    region: "전라도",
+    budget: "100만원 이하",
+    environment: "도심선호",
+    bestSeason: "봄",
+    likes: 98,
+    dislikes: 17,
     visual: "from-stone-950 via-red-950 to-amber-200",
     mood: "문화와 생활비",
   },
   {
     name: "광주",
-    region: "전라권",
-    rating: "3.7",
-    cost: "₩1,350,000 / mo",
-    scores: ["비용 4", "문화 4", "교통 3"],
-    tags: ["문화", "가성비", "커뮤니티"],
+    region: "전라도",
+    budget: "100만원 이하",
+    environment: "코워킹 필수",
+    bestSeason: "겨울",
+    likes: 91,
+    dislikes: 19,
     visual: "from-neutral-950 via-purple-950 to-yellow-200",
     mood: "문화 기반 도시",
   },
   {
     name: "인천",
     region: "수도권",
-    rating: "3.6",
-    cost: "₩1,600,000 / mo",
-    scores: ["교통 4", "공항 5", "비용 3"],
-    tags: ["공항", "수도권", "바다"],
+    budget: "100~200만원",
+    environment: "도심선호",
+    bestSeason: "가을",
+    likes: 87,
+    dislikes: 24,
     visual: "from-slate-950 via-blue-900 to-amber-200",
     mood: "이동성 중심",
   },
   {
     name: "춘천",
-    region: "강원권",
-    rating: "3.6",
-    cost: "₩1,250,000 / mo",
-    scores: ["조용함 5", "자연 5", "비용 4"],
-    tags: ["호수", "조용함", "가성비"],
+    region: "강원도",
+    budget: "100만원 이하",
+    environment: "자연친화",
+    bestSeason: "봄",
+    likes: 82,
+    dislikes: 14,
     visual: "from-green-950 via-teal-900 to-sky-200",
     mood: "호수와 집중",
   },
@@ -162,38 +181,13 @@ const criteria = [
   { title: "재방문 의향", body: "다시 살고 싶은지", icon: Compass },
 ];
 
-const reviews = [
-  {
-    city: "부산",
-    rating: "4.5",
-    text: "해운대 쪽은 비싸지만 광안리 주변은 작업하기 좋은 카페가 많았어요.",
-    meta: "2개월 체류 · 프리랜서 디자이너",
-  },
-  {
-    city: "강릉",
-    rating: "4.2",
-    text: "조용하고 바다가 가까워서 좋지만 늦은 밤 교통은 조금 불편했습니다.",
-    meta: "1개월 체류 · 개발자",
-  },
-  {
-    city: "대전",
-    rating: "4.0",
-    text: "서울과 부산을 오가기 편해서 미팅이 있는 원격근무자에게 실용적이었습니다.",
-    meta: "6주 체류 · 콘텐츠 마케터",
-  },
-];
-
-const rankingCities = cities.slice(0, 3);
-
 export default function Home() {
   return (
     <main className="min-h-screen">
       <Header />
       <Hero />
-      <Ranking />
       <CityExplorer />
       <Criteria />
-      <Reviews />
       <ShareExperience />
     </main>
   );
@@ -229,7 +223,7 @@ function Hero() {
             대한민국에서 노마드로 살기 좋은 도시를 찾아보세요
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-primary-foreground/80 sm:text-lg">
-            실제 사용자 평가로 보는 비용, 카페, 인터넷, 교통, 안전, 생활 만족도
+            예산, 지역, 작업 환경, 계절 조건으로 비교하는 한국 워케이션 도시 리스트
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <div className="relative flex-1">
@@ -268,12 +262,12 @@ function Hero() {
           </div>
           <div className="grid grid-cols-3 gap-2">
             <Metric value="9" label="도시" />
-            <Metric value="42" label="평가" />
-            <Metric value="₩1.6M" label="중간 비용" />
+            <Metric value="1,019" label="좋아요" />
+            <Metric value="3" label="예산군" />
           </div>
           <Separator />
           <p className="text-sm leading-6 text-muted-foreground">
-            비용, 작업환경, 이동성, 체류 만족도를 한 화면에서 비교하는 탐색형 홈입니다.
+            예산, 지역, 환경, 최고 계절을 한 화면에서 비교하는 탐색형 홈입니다.
           </p>
         </div>
       </div>
@@ -281,40 +275,141 @@ function Hero() {
   );
 }
 
-function Ranking() {
-  return (
-    <Section
-      eyebrow="Top 3"
-      title="오늘의 노마드 랭킹"
-      description="평점과 작업 환경, 체류 비용을 함께 본 인기 도시입니다."
-    >
-      <div className="grid gap-4 md:grid-cols-3">
-        {rankingCities.map((city, index) => (
-          <CityCard key={city.name} city={city} rank={index + 1} featured />
-        ))}
-      </div>
-    </Section>
-  );
-}
-
 function CityExplorer() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState<CityFilters>({
+    budget: "전체",
+    region: "전체",
+    environment: "전체",
+    bestSeason: "전체",
+  });
+
+  const filteredCities = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    return cities
+      .filter((city) => {
+        const matchesSearch =
+          !query ||
+          city.name.toLowerCase().includes(query) ||
+          city.region.toLowerCase().includes(query) ||
+          city.environment.toLowerCase().includes(query) ||
+          city.bestSeason.toLowerCase().includes(query);
+        const matchesBudget = filters.budget === "전체" || city.budget === filters.budget;
+        const matchesRegion = filters.region === "전체" || city.region === filters.region;
+        const matchesEnvironment =
+          filters.environment === "전체" || city.environment === filters.environment;
+        const matchesSeason =
+          filters.bestSeason === "전체" || city.bestSeason === filters.bestSeason;
+
+        return (
+          matchesSearch &&
+          matchesBudget &&
+          matchesRegion &&
+          matchesEnvironment &&
+          matchesSeason
+        );
+      })
+      .sort((a, b) => b.likes - a.likes);
+  }, [filters, searchQuery]);
+
+  const hasActiveFilter =
+    searchQuery.trim() ||
+    filters.budget !== "전체" ||
+    filters.region !== "전체" ||
+    filters.environment !== "전체" ||
+    filters.bestSeason !== "전체";
+
+  function updateFilter<Key extends keyof CityFilters>(
+    key: Key,
+    value: CityFilters[Key],
+  ) {
+    setFilters((current) => ({
+      ...current,
+      [key]: value,
+    }));
+  }
+
+  function resetFilters() {
+    setSearchQuery("");
+    setFilters({
+      budget: "전체",
+      region: "전체",
+      environment: "전체",
+      bestSeason: "전체",
+    });
+  }
+
   return (
     <Section
-      eyebrow="Explore"
-      title="도시 탐색"
-      description="정렬과 조건을 바꿔볼 수 있는 UI입니다. 이번 MVP에서는 결과 변경 로직은 포함하지 않습니다."
+      eyebrow="Cities"
+      title="도시 리스트"
+      description="선택한 조건에 맞는 도시를 좋아요 수가 높은 순서대로 표시합니다."
     >
-      <div className="mb-5 grid gap-3 rounded-lg border bg-card/90 p-3 shadow-sm shadow-slate-950/5 sm:grid-cols-2 lg:grid-cols-4">
-        <FilterSelect label="정렬" value="nomad-score" items={["노마드 점수순", "비용 낮은순", "인터넷 좋은순", "카페 많은순"]} />
-        <FilterSelect label="지역" value="all-region" items={["전체", "수도권", "강원권", "충청권", "전라권", "경상권", "제주권"]} />
-        <FilterSelect label="비용" value="all-cost" items={["전체", "150만원 이하", "150~180만원", "180만원 이상"]} />
-        <FilterSelect label="분위기" value="all-mood" items={["전체", "조용한", "바다 근처", "대도시", "문화 많은"]} />
+      <div className="mb-5 grid gap-3 rounded-lg border bg-card/90 p-3 shadow-sm shadow-slate-950/5 sm:grid-cols-2 lg:grid-cols-5">
+        <label className="grid gap-2 text-sm font-medium sm:col-span-2 lg:col-span-1">
+          도시 검색
+          <Input
+            aria-label="도시 리스트 검색"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="도시, 지역, 환경 검색"
+          />
+        </label>
+        <FilterSelect
+          label="예산"
+          value={filters.budget}
+          items={["전체", "100만원 이하", "100~200만원", "200만원 이상"]}
+          onValueChange={(value) => updateFilter("budget", value as CityFilters["budget"])}
+        />
+        <FilterSelect
+          label="지역"
+          value={filters.region}
+          items={["전체", "수도권", "경상도", "전라도", "강원도", "제주도", "충청도"]}
+          onValueChange={(value) => updateFilter("region", value as CityFilters["region"])}
+        />
+        <FilterSelect
+          label="환경"
+          value={filters.environment}
+          items={["전체", "자연친화", "도심선호", "카페작업", "코워킹 필수"]}
+          onValueChange={(value) =>
+            updateFilter("environment", value as CityFilters["environment"])
+          }
+        />
+        <FilterSelect
+          label="최고 계절"
+          value={filters.bestSeason}
+          items={["전체", "봄", "여름", "가을", "겨울"]}
+          onValueChange={(value) =>
+            updateFilter("bestSeason", value as CityFilters["bestSeason"])
+          }
+        />
+        <div className="flex items-end justify-between gap-3 sm:col-span-2 lg:col-span-5">
+          <p className="text-sm text-muted-foreground">
+            {filteredCities.length}개 도시 표시
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={!hasActiveFilter}
+            onClick={resetFilters}
+          >
+            필터 초기화
+          </Button>
+        </div>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {cities.map((city) => (
-          <CityCard key={city.name} city={city} />
-        ))}
-      </div>
+      {filteredCities.length ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredCities.map((city) => (
+            <CityCard key={city.name} city={city} />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-lg border bg-card/90 px-4 py-10 text-center text-muted-foreground">
+          조건에 맞는 도시가 없습니다.
+        </div>
+      )}
     </Section>
   );
 }
@@ -322,9 +417,9 @@ function CityExplorer() {
 function Criteria() {
   return (
     <Section
-      eyebrow="Score"
-      title="사람들이 평가하는 기준"
-      description="노마드 점수는 원격근무자의 실제 생활 조건을 중심으로 해석합니다."
+      eyebrow="Criteria"
+      title="사람들이 비교하는 기준"
+      description="도시 정보는 원격근무자의 실제 생활 조건을 중심으로 해석합니다."
     >
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {criteria.map((item) => {
@@ -338,33 +433,6 @@ function Criteria() {
             </div>
           );
         })}
-      </div>
-    </Section>
-  );
-}
-
-function Reviews() {
-  return (
-    <Section
-      eyebrow="Reviews"
-      title="최근 리뷰"
-      description="장기 체류와 워케이션 경험에서 나온 짧은 평가입니다."
-    >
-      <div className="grid gap-3">
-        {reviews.map((review) => (
-          <Card key={`${review.city}-${review.meta}`}>
-            <CardHeader className="pb-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <CardTitle className="text-base">{review.city}</CardTitle>
-                <Rating value={review.rating} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="leading-7">{review.text}</p>
-              <p className="mt-3 text-sm text-muted-foreground">{review.meta}</p>
-            </CardContent>
-          </Card>
-        ))}
       </div>
     </Section>
   );
@@ -388,31 +456,15 @@ function ShareExperience() {
   );
 }
 
-function CityCard({
-  city,
-  rank,
-  featured = false,
-}: {
-  city: City;
-  rank?: number;
-  featured?: boolean;
-}) {
+function CityCard({ city }: { city: City }) {
   return (
     <Card className="overflow-hidden border-amber-200/50 shadow-lg shadow-slate-950/8">
       <div className={cn("relative h-36 bg-gradient-to-br", city.visual)}>
         <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,.13)_25%,transparent_25%,transparent_50%,rgba(255,255,255,.13)_50%,rgba(255,255,255,.13)_75%,transparent_75%,transparent)] bg-[length:28px_28px] opacity-25" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-        {rank ? (
-          <div className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-md border border-amber-200/60 bg-background/95 text-sm font-semibold text-foreground shadow-sm">
-            {rank}
-          </div>
-        ) : null}
-        <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3 text-white">
-          <div>
-            <p className="text-xs font-medium opacity-80">{city.mood}</p>
-            <p className="text-2xl font-semibold tracking-normal">{city.name}</p>
-          </div>
-          <Rating value={city.rating} inverse />
+        <div className="absolute bottom-3 left-3 right-3 text-white">
+          <p className="text-xs font-medium opacity-80">{city.mood}</p>
+          <p className="text-2xl font-semibold tracking-normal">{city.name}</p>
         </div>
       </div>
       <CardHeader className="pb-3">
@@ -421,27 +473,30 @@ function CityCard({
             <CardTitle className="text-lg">{city.name}</CardTitle>
             <CardDescription>{city.region}</CardDescription>
           </div>
-          {!featured ? <Rating value={city.rating} /> : null}
+          <div className="text-right text-sm">
+            <p className="font-semibold text-primary">{city.likes.toLocaleString()} 좋아요</p>
+            <p className="text-muted-foreground">{city.dislikes.toLocaleString()} 싫어요</p>
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-base font-semibold">{city.cost}</p>
-        <div className="flex flex-wrap gap-2">
-          {city.scores.map((score) => (
-            <Badge key={score} variant="muted">
-              {score}
-            </Badge>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {city.tags.map((tag) => (
-            <span key={tag} className="text-sm text-muted-foreground">
-              #{tag}
-            </span>
-          ))}
-        </div>
+      <CardContent>
+        <dl className="grid gap-3 text-sm">
+          <InfoRow label="예산" value={city.budget} />
+          <InfoRow label="지역" value={city.region} />
+          <InfoRow label="환경" value={city.environment} />
+          <InfoRow label="최고 계절" value={city.bestSeason} />
+        </dl>
       </CardContent>
     </Card>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-md border bg-muted/45 px-3 py-2">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="font-medium text-foreground">{value}</dd>
+    </div>
   );
 }
 
@@ -449,21 +504,23 @@ function FilterSelect({
   label,
   value,
   items,
+  onValueChange,
 }: {
   label: string;
   value: string;
   items: string[];
+  onValueChange: (value: string) => void;
 }) {
   return (
     <label className="grid gap-2 text-sm font-medium">
       {label}
-      <Select defaultValue={value}>
+      <Select value={value} onValueChange={onValueChange}>
         <SelectTrigger aria-label={label}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {items.map((item, index) => (
-            <SelectItem key={item} value={index === 0 ? value : item}>
+          {items.map((item) => (
+            <SelectItem key={item} value={item}>
               {item}
             </SelectItem>
           ))}
@@ -499,22 +556,6 @@ function Section({
         {children}
       </div>
     </section>
-  );
-}
-
-function Rating({ value, inverse = false }: { value: string; inverse?: boolean }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm font-semibold",
-        inverse
-          ? "border border-white/20 bg-black/35 text-white"
-          : "border border-amber-200/60 bg-secondary text-secondary-foreground",
-      )}
-    >
-      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-      {value}
-    </span>
   );
 }
 
