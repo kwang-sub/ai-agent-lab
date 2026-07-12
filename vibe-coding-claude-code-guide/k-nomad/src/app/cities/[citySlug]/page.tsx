@@ -5,8 +5,6 @@ import {
   ArrowLeft,
   CalendarDays,
   MapPin,
-  ThumbsDown,
-  ThumbsUp,
   WalletCards,
   Workflow,
 } from "lucide-react";
@@ -23,6 +21,7 @@ import {
 } from "@/components/ui/card";
 import { cities, getCityBySlug } from "@/lib/cities";
 import { cn } from "@/lib/utils";
+import { CityReactionCard } from "./city-reaction-card";
 
 type CityDetailPageProps = {
   params: Promise<{
@@ -115,28 +114,10 @@ export default async function CityDetailPage({ params }: CityDetailPageProps) {
               </div>
             </div>
             <aside className="grid gap-4 self-start">
-              <Card className="border-amber-200/50 shadow-lg shadow-slate-950/8">
-                <CardHeader>
-                  <CardTitle>추천 반응</CardTitle>
-                  <CardDescription>mock 데이터 기준 기본 반응 수입니다.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid grid-cols-2 gap-3">
-                  <div className="rounded-lg border bg-emerald-50 p-4 text-emerald-900">
-                    <ThumbsUp className="mb-3 h-5 w-5" />
-                    <p className="text-2xl font-semibold">
-                      {city.likes.toLocaleString()}
-                    </p>
-                    <p className="mt-1 text-sm">좋아요</p>
-                  </div>
-                  <div className="rounded-lg border bg-rose-50 p-4 text-rose-900">
-                    <ThumbsDown className="mb-3 h-5 w-5" />
-                    <p className="text-2xl font-semibold">
-                      {city.dislikes.toLocaleString()}
-                    </p>
-                    <p className="mt-1 text-sm">싫어요</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <CityReactionCard
+                initialLikes={city.likes}
+                initialDislikes={city.dislikes}
+              />
               <Card className="border-amber-200/50 shadow-lg shadow-slate-950/8">
                 <CardHeader>
                   <CardTitle>도시 요약</CardTitle>
