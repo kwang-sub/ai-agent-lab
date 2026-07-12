@@ -39,19 +39,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { cities, type City } from "@/lib/cities";
 import { cn } from "@/lib/utils";
-
-type City = {
-  name: string;
-  region: "수도권" | "경상도" | "전라도" | "강원도" | "제주도" | "충청도";
-  budget: "100만원 이하" | "100~200만원" | "200만원 이상";
-  environment: "자연친화" | "도심선호" | "카페작업" | "코워킹 필수";
-  bestSeason: "봄" | "여름" | "가을" | "겨울";
-  likes: number;
-  dislikes: number;
-  visual: string;
-  mood: string;
-};
 
 type CityFilters = {
   budget: City["budget"] | "전체";
@@ -75,108 +64,6 @@ const popularFilters = [
   "카페작업",
   "봄",
   "가을",
-];
-
-const cities: City[] = [
-  {
-    name: "서울",
-    region: "수도권",
-    budget: "200만원 이상",
-    environment: "코워킹 필수",
-    bestSeason: "가을",
-    likes: 156,
-    dislikes: 32,
-    visual: "from-slate-950 via-slate-700 to-amber-300",
-    mood: "초연결 대도시",
-  },
-  {
-    name: "부산",
-    region: "경상도",
-    budget: "100~200만원",
-    environment: "카페작업",
-    bestSeason: "여름",
-    likes: 142,
-    dislikes: 26,
-    visual: "from-slate-900 via-cyan-800 to-stone-200",
-    mood: "해변 워케이션",
-  },
-  {
-    name: "제주",
-    region: "제주도",
-    budget: "100~200만원",
-    environment: "자연친화",
-    bestSeason: "봄",
-    likes: 138,
-    dislikes: 29,
-    visual: "from-emerald-950 via-teal-800 to-amber-200",
-    mood: "자연 집중 환경",
-  },
-  {
-    name: "강릉",
-    region: "강원도",
-    budget: "100~200만원",
-    environment: "카페작업",
-    bestSeason: "여름",
-    likes: 121,
-    dislikes: 18,
-    visual: "from-blue-950 via-slate-700 to-stone-200",
-    mood: "동해안 집중",
-  },
-  {
-    name: "대전",
-    region: "충청도",
-    budget: "100~200만원",
-    environment: "도심선호",
-    bestSeason: "가을",
-    likes: 104,
-    dislikes: 21,
-    visual: "from-zinc-950 via-indigo-900 to-emerald-200",
-    mood: "균형형 거점",
-  },
-  {
-    name: "전주",
-    region: "전라도",
-    budget: "100만원 이하",
-    environment: "도심선호",
-    bestSeason: "봄",
-    likes: 98,
-    dislikes: 17,
-    visual: "from-stone-950 via-red-950 to-amber-200",
-    mood: "문화와 생활비",
-  },
-  {
-    name: "광주",
-    region: "전라도",
-    budget: "100만원 이하",
-    environment: "코워킹 필수",
-    bestSeason: "겨울",
-    likes: 91,
-    dislikes: 19,
-    visual: "from-neutral-950 via-purple-950 to-yellow-200",
-    mood: "문화 기반 도시",
-  },
-  {
-    name: "인천",
-    region: "수도권",
-    budget: "100~200만원",
-    environment: "도심선호",
-    bestSeason: "가을",
-    likes: 87,
-    dislikes: 24,
-    visual: "from-slate-950 via-blue-900 to-amber-200",
-    mood: "이동성 중심",
-  },
-  {
-    name: "춘천",
-    region: "강원도",
-    budget: "100만원 이하",
-    environment: "자연친화",
-    bestSeason: "봄",
-    likes: 82,
-    dislikes: 14,
-    visual: "from-green-950 via-teal-900 to-sky-200",
-    mood: "호수와 집중",
-  },
 ];
 
 const criteria = [
@@ -296,7 +183,7 @@ function CityExplorer() {
   const [cityVotes, setCityVotes] = useState<Record<string, CityVote>>(() =>
     Object.fromEntries(
       cities.map((city) => [
-        city.name,
+        city.slug,
         {
           selected: null,
           likes: city.likes,
@@ -364,7 +251,7 @@ function CityExplorer() {
 
   function updateCityVote(city: City, nextVote: Exclude<VoteState, null>) {
     setCityVotes((current) => {
-      const currentVote = current[city.name] ?? {
+      const currentVote = current[city.slug] ?? {
         selected: null,
         likes: city.likes,
         dislikes: city.dislikes,
@@ -373,7 +260,7 @@ function CityExplorer() {
       if (currentVote.selected === nextVote) {
         return {
           ...current,
-          [city.name]: {
+          [city.slug]: {
             selected: null,
             likes: city.likes,
             dislikes: city.dislikes,
@@ -383,7 +270,7 @@ function CityExplorer() {
 
       return {
         ...current,
-        [city.name]: {
+        [city.slug]: {
           selected: nextVote,
           likes: city.likes + (nextVote === "like" ? 1 : 0),
           dislikes: city.dislikes + (nextVote === "dislike" ? 1 : 0),
@@ -454,7 +341,7 @@ function CityExplorer() {
       {filteredCities.length ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredCities.map((city) => {
-            const vote = cityVotes[city.name] ?? {
+            const vote = cityVotes[city.slug] ?? {
               selected: null,
               likes: city.likes,
               dislikes: city.dislikes,
@@ -462,7 +349,7 @@ function CityExplorer() {
 
             return (
               <CityCard
-                key={city.name}
+                key={city.slug}
                 city={city}
                 vote={vote}
                 onVote={(nextVote) => updateCityVote(city, nextVote)}
@@ -555,6 +442,12 @@ function CityCard({
           <InfoRow label="환경" value={city.environment} />
           <InfoRow label="최고 계절" value={city.bestSeason} />
         </dl>
+        <Button asChild variant="secondary" className="w-full justify-center">
+          <Link href={`/cities/${city.slug}`}>
+            상세 정보
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </Button>
         <div className="grid grid-cols-2 gap-2">
           <Button
             type="button"
