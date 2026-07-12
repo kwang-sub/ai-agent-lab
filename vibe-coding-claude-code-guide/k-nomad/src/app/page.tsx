@@ -211,7 +211,6 @@ function Header() {
         </Link>
         <nav className="flex items-center gap-2">
           <AuthNav />
-          <Button size="sm">도시등록</Button>
         </nav>
       </div>
     </header>
@@ -384,18 +383,6 @@ function ShareExperience() {
             한 달 살아본 도시, 워케이션으로 머문 도시, 원격근무하기 좋았던 곳을 평가하세요
           </p>
         </div>
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row lg:mt-0">
-          <Button variant="secondary" size="lg">
-            도시 평가하기
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            className="border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground hover:text-primary"
-          >
-            도시 제안하기
-          </Button>
-        </div>
       </div>
     </section>
   );
@@ -452,18 +439,6 @@ function CityCard({
               #{tag}
             </span>
           ))}
-        </div>
-        <div className="grid grid-cols-2 gap-2 pt-1">
-          {featured ? (
-            <Button className="col-span-2" variant="outline">
-              자세히 보기
-            </Button>
-          ) : (
-            <>
-              <Button variant="secondary">평가</Button>
-              <Button variant="outline">상세</Button>
-            </>
-          )}
         </div>
       </CardContent>
     </Card>
