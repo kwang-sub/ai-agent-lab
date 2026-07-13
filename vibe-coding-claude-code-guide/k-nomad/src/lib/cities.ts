@@ -1,127 +1,86 @@
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { VoteType } from "@/types/database";
+
+export type CityRegion =
+  | "수도권"
+  | "경상도"
+  | "전라도"
+  | "강원도"
+  | "제주도"
+  | "충청도";
+
+export type CityBudget = "100만원 이하" | "100~200만원" | "200만원 이상";
+
+export type CityEnvironment =
+  | "자연친화"
+  | "도심선호"
+  | "카페작업"
+  | "코워킹 필수";
+
+export type CitySeason = "봄" | "여름" | "가을" | "겨울";
+
+export type CityVoteState = VoteType | null;
+
 export type City = {
+  id: string;
   name: string;
   slug: string;
-  region: "수도권" | "경상도" | "전라도" | "강원도" | "제주도" | "충청도";
-  budget: "100만원 이하" | "100~200만원" | "200만원 이상";
-  environment: "자연친화" | "도심선호" | "카페작업" | "코워킹 필수";
-  bestSeason: "봄" | "여름" | "가을" | "겨울";
+  region: CityRegion;
+  budget: CityBudget;
+  environment: CityEnvironment;
+  bestSeason: CitySeason;
   likes: number;
   dislikes: number;
+  userVote: CityVoteState;
   visual: string;
   mood: string;
 };
 
-export const cities: City[] = [
-  {
-    name: "서울",
-    slug: "seoul",
-    region: "수도권",
-    budget: "200만원 이상",
-    environment: "코워킹 필수",
-    bestSeason: "가을",
-    likes: 156,
-    dislikes: 32,
-    visual: "from-slate-950 via-slate-700 to-amber-300",
-    mood: "초연결 대도시",
-  },
-  {
-    name: "부산",
-    slug: "busan",
-    region: "경상도",
-    budget: "100~200만원",
-    environment: "카페작업",
-    bestSeason: "여름",
-    likes: 142,
-    dislikes: 26,
-    visual: "from-slate-900 via-cyan-800 to-stone-200",
-    mood: "해변 워케이션",
-  },
-  {
-    name: "제주",
-    slug: "jeju",
-    region: "제주도",
-    budget: "100~200만원",
-    environment: "자연친화",
-    bestSeason: "봄",
-    likes: 138,
-    dislikes: 29,
-    visual: "from-emerald-950 via-teal-800 to-amber-200",
-    mood: "자연 집중 환경",
-  },
-  {
-    name: "강릉",
-    slug: "gangneung",
-    region: "강원도",
-    budget: "100~200만원",
-    environment: "카페작업",
-    bestSeason: "여름",
-    likes: 121,
-    dislikes: 18,
-    visual: "from-blue-950 via-slate-700 to-stone-200",
-    mood: "동해안 집중",
-  },
-  {
-    name: "대전",
-    slug: "daejeon",
-    region: "충청도",
-    budget: "100~200만원",
-    environment: "도심선호",
-    bestSeason: "가을",
-    likes: 104,
-    dislikes: 21,
-    visual: "from-zinc-950 via-indigo-900 to-emerald-200",
-    mood: "균형형 거점",
-  },
-  {
-    name: "전주",
-    slug: "jeonju",
-    region: "전라도",
-    budget: "100만원 이하",
-    environment: "도심선호",
-    bestSeason: "봄",
-    likes: 98,
-    dislikes: 17,
-    visual: "from-stone-950 via-red-950 to-amber-200",
-    mood: "문화와 생활비",
-  },
-  {
-    name: "광주",
-    slug: "gwangju",
-    region: "전라도",
-    budget: "100만원 이하",
-    environment: "코워킹 필수",
-    bestSeason: "겨울",
-    likes: 91,
-    dislikes: 19,
-    visual: "from-neutral-950 via-purple-950 to-yellow-200",
-    mood: "문화 기반 도시",
-  },
-  {
-    name: "인천",
-    slug: "incheon",
-    region: "수도권",
-    budget: "100~200만원",
-    environment: "도심선호",
-    bestSeason: "가을",
-    likes: 87,
-    dislikes: 24,
-    visual: "from-slate-950 via-blue-900 to-amber-200",
-    mood: "이동성 중심",
-  },
-  {
-    name: "춘천",
-    slug: "chuncheon",
-    region: "강원도",
-    budget: "100만원 이하",
-    environment: "자연친화",
-    bestSeason: "봄",
-    likes: 82,
-    dislikes: 14,
-    visual: "from-green-950 via-teal-900 to-sky-200",
-    mood: "호수와 집중",
-  },
-];
+type CityRow = {
+  id: string;
+  name: string;
+  slug: string;
+  region: string;
+  budget: string;
+  environment: string;
+  best_season: string;
+  visual: string;
+  mood: string;
+  likes: number;
+  dislikes: number;
+  user_vote: VoteType | null;
+};
 
-export function getCityBySlug(slug: string) {
+function mapCity(row: CityRow): City {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    region: row.region as CityRegion,
+    budget: row.budget as CityBudget,
+    environment: row.environment as CityEnvironment,
+    bestSeason: row.best_season as CitySeason,
+    likes: row.likes,
+    dislikes: row.dislikes,
+    userVote: row.user_vote,
+    visual: row.visual,
+    mood: row.mood,
+  };
+}
+
+export async function getCities() {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("get_cities_with_votes");
+
+  if (error) {
+    throw new Error(`도시 데이터를 불러오지 못했습니다: ${error.message}`);
+  }
+
+  return (data ?? []).map(mapCity).sort((a, b) => b.likes - a.likes);
+}
+
+export async function getCityBySlug(slug: string) {
+  const cities = await getCities();
+
   return cities.find((city) => city.slug === slug);
 }
