@@ -19,7 +19,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { cities, getCityBySlug } from "@/lib/cities";
+import { getCityBySlug } from "@/lib/cities";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { CityReactionCard } from "./city-reaction-card";
 
@@ -29,17 +30,11 @@ type CityDetailPageProps = {
   }>;
 };
 
-export function generateStaticParams() {
-  return cities.map((city) => ({
-    citySlug: city.slug,
-  }));
-}
-
 export async function generateMetadata({
   params,
 }: CityDetailPageProps): Promise<Metadata> {
   const { citySlug } = await params;
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
 
   if (!city) {
     return {
@@ -55,7 +50,13 @@ export async function generateMetadata({
 
 export default async function CityDetailPage({ params }: CityDetailPageProps) {
   const { citySlug } = await params;
-  const city = getCityBySlug(citySlug);
+  const [city, supabase] = await Promise.all([
+    getCityBySlug(citySlug),
+    createSupabaseServerClient(),
+  ]);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!city) {
     notFound();
@@ -115,8 +116,11 @@ export default async function CityDetailPage({ params }: CityDetailPageProps) {
             </div>
             <aside className="grid gap-4 self-start">
               <CityReactionCard
+                citySlug={city.slug}
                 initialLikes={city.likes}
                 initialDislikes={city.dislikes}
+                initialVote={city.userVote}
+                isAuthenticated={Boolean(user)}
               />
               <Card className="border-amber-200/50 shadow-lg shadow-slate-950/8">
                 <CardHeader>
