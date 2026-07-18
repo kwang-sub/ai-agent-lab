@@ -6,7 +6,10 @@
     "dev": "node node_modules/next/dist/bin/next dev --webpack",
     "build": "node node_modules/next/dist/bin/next build --webpack",
     "start": "node node_modules/next/dist/bin/next start",
-    "lint": "node node_modules/eslint/bin/eslint.js src --ext .ts,.tsx"
+    "lint": "node node_modules/eslint/bin/eslint.js src --ext .ts,.tsx",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@radix-ui/react-select": "^2.2.6",
@@ -23,12 +26,21 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.0",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^24.10.2",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^9.39.2",
     "eslint-config-next": "^16.2.9",
+    "jsdom": "^29.1.1",
     "tailwindcss": "^4.2.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.10"
   }
 }
