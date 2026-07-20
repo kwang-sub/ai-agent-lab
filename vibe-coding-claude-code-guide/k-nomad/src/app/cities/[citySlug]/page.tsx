@@ -20,6 +20,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getCityBySlug } from "@/lib/cities";
+import { isUsingE2ECityFixtures } from "@/lib/e2e-cities";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { CityReactionCard } from "./city-reaction-card";
@@ -50,13 +51,18 @@ export async function generateMetadata({
 
 export default async function CityDetailPage({ params }: CityDetailPageProps) {
   const { citySlug } = await params;
-  const [city, supabase] = await Promise.all([
+  const [city, user] = await Promise.all([
     getCityBySlug(citySlug),
-    createSupabaseServerClient(),
+    isUsingE2ECityFixtures()
+      ? Promise.resolve(null)
+      : createSupabaseServerClient().then(async (supabase) => {
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+
+          return user;
+        }),
   ]);
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   if (!city) {
     notFound();
