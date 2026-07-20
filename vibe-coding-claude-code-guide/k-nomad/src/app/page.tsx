@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { getCities } from "@/lib/cities";
+import { isUsingE2ECityFixtures } from "@/lib/e2e-cities";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const popularFilters = [
@@ -45,13 +46,18 @@ const criteria = [
 ];
 
 export default async function Home() {
-  const [cities, supabase] = await Promise.all([
+  const [cities, user] = await Promise.all([
     getCities(),
-    createSupabaseServerClient(),
+    isUsingE2ECityFixtures()
+      ? Promise.resolve(null)
+      : createSupabaseServerClient().then(async (supabase) => {
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+
+          return user;
+        }),
   ]);
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   return (
     <main className="min-h-screen">

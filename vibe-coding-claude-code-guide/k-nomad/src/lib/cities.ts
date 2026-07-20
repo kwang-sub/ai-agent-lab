@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { VoteType } from "@/types/database";
+import { e2eCities, isUsingE2ECityFixtures } from "./e2e-cities";
 
 export type CityRegion =
   | "수도권"
@@ -69,6 +70,10 @@ function mapCity(row: CityRow): City {
 }
 
 export async function getCities() {
+  if (isUsingE2ECityFixtures()) {
+    return e2eCities;
+  }
+
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.rpc("get_cities_with_votes");
 
